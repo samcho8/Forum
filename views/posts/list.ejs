@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Forum </title>
+</head>
+<body>
+<%for (const [key, val] of Object.entries(jsonData)) {%>
+    Title: <%= key%>
+    <br />
+    Body: <%= val%>
+    <br />
+    <br />
+    <% } %>
+<a href="/posts/new"> create new post </a>
+</body>
+</html>
