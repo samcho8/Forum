@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title> Forum </title>
+<title> List of Posts </title>
 </head>
 <body>
 <%for (const [key, val] of Object.entries(jsonData)) {%>
@@ -12,6 +12,7 @@
     <form method="POST" action="/posts/delete/<%= key%>">
     <button type="submit"> Delete </button>
     </form>
+    <a href="/posts/edit/<%= key%>"> Edit </a>
     <br /> 
     <br />
     <% } %>

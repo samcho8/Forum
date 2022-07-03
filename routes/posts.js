@@ -16,15 +16,23 @@ router.post('/', (req, res) => {
 });
 
 router.post('/delete/:title', (req, res) => {
-    console.log(req.params.title);
     delete postBlock[req.params.title];
     res.redirect('/posts');
 });
+
+router.get('/edit/:title', (req, res) => {
+    res.render("posts/edit", {data: postBlock, key: postBlock[req.params.title]});
+})
+
 router.route("/:title").get((req, res) => {
    const thisPost = {};
    thisPost[req.params.title] = postBlock[req.params.title];
    res.render("posts/list", {jsonData: thisPost});
-})
+}).put((req, res) => {
+    postBlock[req.body.title] = req.body.body;
+    delete postBlock[req.params.title];
+    res.render("posts/list", {jsonData: postBlock}); 
+});
 
 router.param("id", (req, res, next, id) => {
     req.post = postBlock[title];
