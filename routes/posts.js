@@ -15,15 +15,16 @@ router.post('/', (req, res) => {
     res.redirect('/posts');
 });
 
+router.post('/delete/:title', (req, res) => {
+    console.log(req.params.title);
+    delete postBlock[req.params.title];
+    res.redirect('/posts');
+});
 router.route("/:title").get((req, res) => {
    const thisPost = {};
    thisPost[req.params.title] = postBlock[req.params.title];
    res.render("posts/list", {jsonData: thisPost});
-}).put((req, res) => {
-    res.send("creation of a post with title");
-}).delete((req, res) => {
-    res.send("deletion of post of title");
-});
+})
 
 router.param("id", (req, res, next, id) => {
     req.post = postBlock[title];
