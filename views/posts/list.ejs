@@ -4,18 +4,20 @@
 <title> List of Posts </title>
 </head>
 <body>
-<%for (const [key, val] of Object.entries(jsonData)) {%>
-    Title: <%= key%>
+<%for (const item of jsonData) {%>
+    Title: <%= item["title"]%>
     <br />
-    Body: <%= val%>
+    Body: <%= item["body"]%>
     <br />
-    <form method="POST" action="/posts/delete/<%= key%>">
+    <form method="POST" action="/posts/delete/<%= item["post_id"]%>">
     <button type="submit"> Delete </button>
     </form>
-    <a href="/posts/edit/<%= key%>"> Edit </a>
+    <a href="/posts/edit/<%= item["post_id"]%>"> Edit </a>
     <br /> 
     <br />
     <% } %>
 <a href="/posts/new"> create new post </a>
+<br />
+<a href="/"> homepage </a>
 </body>
 </html>
