@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> Comments </title>
+</head>
+<body>
+Title: <%=data["title"]%>
+<br />
+Body: <%=data["body"]%>
+<br />
+<%for (const item of comments) {%>
+    Comment: <%=item["description"]%>
+    <br />
+    <% } %> 
+<form action="/posts/comment/<%=data["post_id"]%>/<%=category%>" method="POST">
+<label> Add a comment
+    <input type="text" name="comment" />
+</label>
+    <button type="submit"> Submit</button>
+</form>
+<a href="/"> Home </a>
+</body>
+</html>
