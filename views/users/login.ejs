@@ -6,7 +6,7 @@
 <body>
 <form action="/login" method="POST">
 <%if (failed == true) {%>
-    <%= alert("You entered the wrong password or username"); %>
+    <p> You have entered the wrong username or password </p>
 <%}%>
 <label> Username 
     <input type="text" name="username" required/>
