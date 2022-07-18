@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> User Login </title>
+</head>
+<body>
+<form action="/login" method="POST">
+<%if (failed == true) {%>
+    <%= alert("You entered the wrong password or username"); %>
+<%}%>
+<label> Username 
+    <input type="text" name="username" required/>
+</label>
+<br />
+<label> Password
+    <input type="password" name="password" required/>
+</label>
+    <button type="submit"> Submit</button>
+</form>
+</body>
+</html>

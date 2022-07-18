@@ -18,4 +18,8 @@ const creationRouter = require('./routes/create');
 
 app.use('/create', creationRouter);
 
+const loginRouter = require('./routes/login');
+
+app.use('/login', loginRouter);
+
 app.listen(PORT);
