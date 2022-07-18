@@ -14,4 +14,8 @@ const postRouter = require('./routes/posts');
 
 app.use('/posts', postRouter);
 
+const creationRouter = require('./routes/create');
+
+app.use('/create', creationRouter);
+
 app.listen(PORT);
