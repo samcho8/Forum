@@ -25,8 +25,8 @@ CREATE TABLE categories (
 );
 
 CREATE TABLE users (
-    username VARCHAR(20),
+    username VARCHAR(20) NOT NULL,
     email VARCHAR(25),
-    password VARCHAR(20),
+    password TEXT NOT NULL,
     user_id SERIAL PRIMARY KEY
 );
