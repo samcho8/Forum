@@ -7,8 +7,11 @@ CREATE TABLE post (
     title VARCHAR(255),
     body VARCHAR(255),
     category_id SERIAL,
+    user_id SERIAL,
+    FOREIGN KEY(user_id)
+        REFERENCES users(user_id),
     FOREIGN KEY(category_id) 
-        REFERENCES categories(category_id),
+        REFERENCES categories(category_id)
 );
 
 CREATE TABLE comments (

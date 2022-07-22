@@ -1,12 +1,25 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
+const session = require('express-session');
+const store = new session.MemoryStore();
 const app = express();
 const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');
+app.use(session({
+    secret: 'cookie_secret',
+    cookie: { maxAge: 300000 },
+    saveUninitialized: false,
+    store,
+    resave: true
+}));
 
 app.get('/', (req, res) => {
+    console.log(store);
+    if (req.session.authenticated) {
+        res.render("logged_in");
+        return;
+    }
     res.render("index");
 });
 
