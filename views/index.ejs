@@ -4,7 +4,16 @@
 <title> Forum </title>
 </head>
 <body>
-<a href="/login"> Login </a>
+<%if (typeof(user) !== "undefined") {%>
+    <h4> Hello <%= user %> </h4>
+<%}%>
+<%if (typeof(user) === "undefined") {%>
+    <a href="/login"> Login </a>
+<%}%>
+<br />
 <a href="/create"> Create a new account </a>
+<br />
+<a href="/posts/main"> Main Posts </a>
+<a href="/posts/sub"> Sub Posts </a>
 </body>
 </html>

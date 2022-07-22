@@ -15,9 +15,9 @@ app.use(session({
 }));
 
 app.get('/', (req, res) => {
-    console.log(store);
-    if (req.session.authenticated) {
-        res.render("logged_in");
+    var session = req.session;
+    if (session.authenticated) {
+        res.render("index", {user: session["user"]["username"]});
         return;
     }
     res.render("index");
