@@ -3,7 +3,7 @@ const pool = require('../db');
 const router = express.Router();
 
 router.get('/:category', async (req, res) => {
-    const posts = await pool.query("SELECT * FROM post WHERE category_id = $1", 
+    const posts = await pool.query("SELECT * FROM post p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ", 
     [req.params.category]);
     res.render("posts/list", { data: posts["rows"], category: req.params.category });
 })
@@ -15,8 +15,9 @@ router.get('/new/:category', (req, res) => {
 router.post('/comment/:id/:category', async (req, res) => {
     const id = req.params.id;
     const description = req.body.comment;
-    const comment = await pool.query('INSERT INTO comments (post_id, description) VALUES($1, $2)',
-    [id, description]);
+    const session = req.session;
+    const comment = await pool.query('INSERT INTO comments (post_id, description, username) VALUES($1, $2, $3)',
+    [id, description, session["user"]["username"]]);
     res.redirect(`/posts/${req.params.category}`);
 });
 
@@ -25,11 +26,12 @@ router.post('/:category', async (req, res) => {
         res.status(500).send("cannot create post without a title");
         return;
     }
+    const session = req.session;
     const title = req.body.title;
     const body = req.body.body;
     const category = req.params.category;
-    const newPost = await pool.query("INSERT INTO post (title, body, category_id) VALUES ($1, $2, $3) RETURNING *",
-        [title, body, category]
+    const newPost = await pool.query("INSERT INTO post (title, body, category_id, user_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3), (SELECT user_id FROM users WHERE username = $4)) RETURNING *",
+        [title, body, category, session["user"]["username"]]
     );
     res.redirect(`/posts/${category}`);
 });
@@ -63,7 +65,6 @@ router.post('/edit/:id/:category', async (req, res) => {
         res.redirect('/posts');
         return;
     }
-    console.log(req.params);
     const id = req.params.id;
     const title = req.body.title;
     const body = req.body.body;

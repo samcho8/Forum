@@ -8,10 +8,15 @@ router.get('/', (req, res) => {
 
 router.post('/', async (req, res) => {
     const salt = await bcrypt.genSalt(20);
-    const hashed = await bcrypt.hash(req.body.password, salt);
-    console.log(hashed);
+    const password = req.body.password;
+    const hashed = await bcrypt.hash(password, salt);
+    const username = req.body.username;
     const user = await pool.query("INSERT INTO users (username, password, email) VALUES($1, $2, $3)",
-    [req.body.username, hashed, req.body.email]);
+    [username, hashed, req.body.email]);
+    req.session.authenticated = true;
+    req.session.user = {
+        username, password
+    };
     res.redirect('/');
 });
 
