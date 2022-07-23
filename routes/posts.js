@@ -5,7 +5,11 @@ const router = express.Router();
 router.get('/:category', async (req, res) => {
     const posts = await pool.query("SELECT * FROM post p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ", 
     [req.params.category]);
-    res.render("posts/list", { data: posts["rows"], category: req.params.category });
+    if (req.session["user"]) {
+        res.render("posts/list", { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
+        return;
+    }
+    res.render("posts/list", { data: posts["rows"], user: 0, category: req.params.category });
 })
 
 router.get('/new/:category', (req, res) => {
