@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db');
 const router = express.Router();
+const mailer = require("nodemailer");
 const bcrypt = require('bcrypt');
 router.get('/', (req, res) => {
     res.render('users/new_account');
@@ -17,6 +18,20 @@ router.post('/', async (req, res) => {
     req.session.user = {
         username, password
     };
+    var transporter = mailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'samchoforum@gmail.com',
+            pass: 'izctlvdzdwnyfgtl'
+        }
+    });
+    var email = await transporter.sendMail({
+       from: "Sam Cho <samchoforum@gmail.com>",
+       to: req.body.email,
+       subject: "Welcome!",
+       text: "Welcome to Sam Cho's Forum App!",
+       html: "<p> Welcome to Sam Cho's Forum App! </p>" 
+    });
     res.redirect('/');
 });
 
