@@ -2,6 +2,18 @@ CREATE DATABASE posts;
 
 --\c into posts
 
+CREATE TABLE users (
+    username VARCHAR(20) NOT NULL UNIQUE,
+    email TEXT UNIQUE,
+    password TEXT NOT NULL,
+    user_id SERIAL PRIMARY KEY
+);
+
+CREATE TABLE categories (
+    category_name VARCHAR(20),
+    category_id SERIAL PRIMARY KEY
+);
+
 CREATE TABLE post (
     post_id SERIAL PRIMARY KEY,
     title TEXT,
@@ -25,14 +37,6 @@ CREATE TABLE comments (
         REFERENCES post(post_id)
 );
 
-CREATE TABLE categories (
-    category_name VARCHAR(20),
-    category_id SERIAL PRIMARY KEY
-);
+INSERT INTO categories (category_name) VALUES('main');
 
-CREATE TABLE users (
-    username VARCHAR(20) NOT NULL,
-    email TEXT UNIQUE,
-    password TEXT NOT NULL,
-    user_id SERIAL PRIMARY KEY
-);
+INSERT INTO categories (category_name) VALUES('sub');

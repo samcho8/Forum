@@ -10,7 +10,6 @@ router.get('/', (req, res) => {
 
 
 router.post('/', async(req, res) => {
-    console.log(req.sessionID);
     const { username, password } = req.body;
     const user = await pool.query("SELECT user_id FROM users WHERE username = $1",
     [username]);
