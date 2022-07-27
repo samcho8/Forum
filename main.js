@@ -25,6 +25,10 @@ app.get('/', (req, res) => {
     res.render("index");
 });
 
+app.get('/logout', (req, res) => {
+    req.session.authenticated = false;
+    res.redirect('/');
+});
 
 const postRouter = require('./routes/posts');
 
