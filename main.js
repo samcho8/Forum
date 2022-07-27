@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const dotenv = require('dotenv').config();
 const store = new session.MemoryStore();
 const app = express();
 const PORT = 3000;
@@ -13,6 +14,7 @@ app.use(session({
     store,
     resave: true
 }));
+
 
 app.get('/', (req, res) => {
     var session = req.session;
