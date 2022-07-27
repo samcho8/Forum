@@ -3,8 +3,8 @@ const pool = require('../db');
 const router = express.Router();
 
 router.get('/:category', async (req, res) => {
-    const posts = await pool.query("SELECT * FROM post p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ", 
-    [req.params.category]);
+    const posts = await pool.query("SELECT * FROM post p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ",
+        [req.params.category]);
     if (req.session["user"]) {
         res.render("posts/list", { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
         return;
@@ -13,15 +13,15 @@ router.get('/:category', async (req, res) => {
 })
 
 router.get('/new/:category', (req, res) => {
-    res.render("posts/new", {category: req.params.category});
+    res.render("posts/new", { category: req.params.category });
 });
 
 router.post('/comment/:id/:category', async (req, res) => {
     const id = req.params.id;
     const description = req.body.comment;
     const session = req.session;
-    const comment = await pool.query('INSERT INTO comments (post_id, description, username) VALUES($1, $2, $3)',
-    [id, description, session["user"]["username"]]);
+    const comment = await pool.query('INSERT INTO comments (post_id, description, user_id) VALUES($1, $2, $3)',
+        [id, description, session["user"]["user_id"]]);
     res.redirect(`/posts/${req.params.category}`);
 });
 
@@ -31,6 +31,7 @@ router.post('/:category', async (req, res) => {
         return;
     }
     const session = req.session;
+    console.log(session);
     const title = req.body.title;
     const body = req.body.body;
     const category = req.params.category;
@@ -42,26 +43,36 @@ router.post('/:category', async (req, res) => {
 
 router.post('/delete/:id/:category', async (req, res) => {
     const { id } = req.params;
+    const deleted_post = await pool.query("DELETE FROM post CASCADE WHERE post_id = $1 AND user_id = $2 RETURNING user_id",
+        [id, req.session["user"]["user_id"]]);
+    console.log(deleted_post);
+    if (!deleted_post["rows"][0] || deleted_post["rows"][0]["user_id"] !== req.session["user"]["user_id"]) {
+        res.send("You cannot delete a post that doesn't belong to you");
+        return;
+    }
     const deleted_comments = await pool.query("DELETE FROM comments WHERE post_id = $1",
-    [id]);
-    const deleted_post = await pool.query("DELETE FROM post WHERE post_id = $1",
-    [id]);
+        [id]);
     res.redirect(`/posts/${req.params.category}`);
 });
 
 
-router.get('/edit/:id', async (req, res) => {
+router.get('/edit/:category/:id', async (req, res) => {
+    const { id } = req.params;
     const post = await pool.query("SELECT * FROM post WHERE post_id = $1",
-    [req.params.id]);
-    res.render('posts/edit', { data: post["rows"][0], category: post["rows"][0]["category_id"] });
+        [req.params.id]);
+    if (post["rows"][0]["user_id"] !== req.session["user"]["user_id"]) {
+        res.send("You cannot edit a post that doesn't belong to you");
+        return;
+    }
+    res.render('posts/edit', { data: post["rows"][0], category: req.params.category });
 });
 
-router.get('/comment/:id', async (req, res) => {
+router.get('/comment/:category/:id', async (req, res) => {
     const post = await pool.query("SELECT * FROM post WHERE post_id = $1",
-    [req.params.id]);
+        [req.params.id]);
     const comments = await pool.query("SELECT * FROM comments WHERE post_id = $1",
-    [req.params.id]);
-    res.render('posts/comment', {data: post["rows"][0], comments: comments["rows"], category: post["rows"][0]["category_id"]});
+        [req.params.id]);
+    res.render('posts/comment', { data: post["rows"][0], comments: comments["rows"], category: req.params.category });
 });
 
 router.post('/edit/:id/:category', async (req, res) => {
@@ -72,16 +83,17 @@ router.post('/edit/:id/:category', async (req, res) => {
     const id = req.params.id;
     const title = req.body.title;
     const body = req.body.body;
+    const category = req.params.category;
     const updatedPost = await pool.query('UPDATE post SET title = $1, body = $2 WHERE post_id = $3;',
-    [title, body, id]);
+        [title, body, id]);
     res.redirect(`/posts/${category}`);
 });
 
 router.get("/:title", async (req, res) => {
     const post = await pool.query('SELECT * FROM post WHERE title = $1',
-    [req.params.title]
+        [req.params.title]
     );
-    res.render('posts/list', { jsonData: post});
+    res.render('posts/list', { jsonData: post });
 });
 
 module.exports = router;

@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title> New Post </title>
+    <title> New Post </title>
 </head>
+
 <body>
-<form action="/posts/<%=category%>" method="POST">
-<label> Title 
-    <input type="text" name="title" />
-</label>
-<br />
-<label> Body 
-    <input type="text" name="body" />
-</label>
-    <button type="submit"> Submit</button>
-</form>
+    <form action="/posts/<%=category%>" method="POST">
+        <label> Title
+            <input type="text" name="title" />
+        </label>
+        <br />
+        <label> Body
+            <input type="text" name="body" />
+        </label>
+        <button type="submit"> Submit</button>
+    </form>
 </body>
+
 </html>

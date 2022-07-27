@@ -11,11 +11,9 @@ router.get('/', (req, res) => {
 
 router.post('/', async(req, res) => {
     const { username, password } = req.body;
-    const user = await pool.query("SELECT user_id FROM users WHERE username = $1",
+    const user = await pool.query("SELECT user_id, password FROM users WHERE username = $1",
     [username]);
-    const pass = await pool.query("SELECT password FROM users WHERE username = $1",
-    [username]);
-    if (user["rows"].length == 0 || pass["rows"].length == 0) {
+    if (user["rows"].length == 0) {
         res.render("users/login", {failed: true});
         return;
     }
@@ -24,19 +22,18 @@ router.post('/', async(req, res) => {
         res.redirect('/');
         return;
     } else {
-        if (!bcrypt.compare(password, pass["rows"][0]["password"]) || !user_id) {
+        if (!bcrypt.compare(password, user["rows"][0]["password"]) || !user_id) {
             res.render("users/login", {failed: true});
             return;
         } else {
             req.session.authenticated = true;
             req.session.user = {
-                username, password
+                username, user_id
             };
             res.redirect('/');
             return;
         }
     }
-    res.redirect(`/`);
 });
 
 module.exports = router;
