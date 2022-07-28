@@ -37,6 +37,3 @@ CREATE TABLE comments (
         REFERENCES post(post_id)
 );
 
-INSERT INTO categories (category_name) VALUES('main');
-
-INSERT INTO categories (category_name) VALUES('sub');
