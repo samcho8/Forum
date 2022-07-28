@@ -2,7 +2,6 @@ const express = require('express');
 const pool = require('../db');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const session = require('express-session');
 
 router.get('/', (req, res) => {
     res.render('users/login', {failed: false});
