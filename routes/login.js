@@ -35,4 +35,8 @@ router.post('/', async(req, res) => {
     }
 });
 
+router.get("*", (req, res) => {
+    res.redirect('/');
+});
+
 module.exports = router;
