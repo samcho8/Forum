@@ -3,7 +3,7 @@ const session = require('express-session');
 const dotenv = require('dotenv').config();
 const store = new session.MemoryStore();
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('view engine', 'ejs');

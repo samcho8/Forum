@@ -1,6 +1,5 @@
-CREATE DATABASE posts;
 
---\c into posts
+--\c into forum
 
 CREATE TABLE users (
     username VARCHAR(20) NOT NULL UNIQUE,
@@ -14,7 +13,7 @@ CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY
 );
 
-CREATE TABLE post (
+CREATE TABLE posts (
     post_id SERIAL PRIMARY KEY,
     title TEXT,
     body TEXT,
@@ -34,6 +33,6 @@ CREATE TABLE comments (
     FOREIGN KEY (user_id)
         REFERENCES users(user_id),
     FOREIGN KEY(post_id)
-        REFERENCES post(post_id)
+        REFERENCES posts(post_id)
 );
 
