@@ -31,7 +31,6 @@ router.post('/:category', async (req, res) => {
         return;
     }
     const session = req.session;
-    console.log(session);
     const title = req.body.title;
     const body = req.body.body;
     const category = req.params.category;
