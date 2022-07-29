@@ -48,4 +48,8 @@ const loginRouter = require('./routes/login');
 
 app.use('/login', loginRouter);
 
+app.get("*", (req, res) => {
+    res.redirect('/');
+});
+
 app.listen(PORT);

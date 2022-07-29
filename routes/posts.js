@@ -96,4 +96,8 @@ router.get("/:title", async (req, res) => {
     res.render('posts/list', { jsonData: post });
 });
 
+router.get("*", (req, res) => {
+    res.redirect('/');
+});
+
 module.exports = router;
