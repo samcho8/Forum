@@ -5,7 +5,7 @@ var transporter = mailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'samchoforum@gmail.com',
-        pass: dotenv["parsed"]["MAILPASS"]
+        pass: process.env.MAILPASS
     }
 });
 module.exports = transporter;
