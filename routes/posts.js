@@ -3,7 +3,7 @@ const pool = require('../db');
 const router = express.Router();
 
 router.get('/:category', async (req, res) => {
-    const posts = await pool.query("SELECT * FROM post p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ",
+    const posts = await pool.query("SELECT * FROM posts p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ",
         [req.params.category]);
     if (req.session["user"]) {
         res.render("posts/list", { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
@@ -35,7 +35,7 @@ router.post('/:category', async (req, res) => {
     const title = req.body.title;
     const body = req.body.body;
     const category = req.params.category;
-    const newPost = await pool.query("INSERT INTO post (title, body, category_id, user_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3), (SELECT user_id FROM users WHERE username = $4)) RETURNING *",
+    const newPost = await pool.query("INSERT INTO posts (title, body, category_id, user_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3), (SELECT user_id FROM users WHERE username = $4)) RETURNING *",
         [title, body, category, session["user"]["username"]]
     );
     res.redirect(`/posts/${category}`);
@@ -43,7 +43,7 @@ router.post('/:category', async (req, res) => {
 
 router.post('/delete/:id/:category', async (req, res) => {
     const { id } = req.params;
-    const deleted_post = await pool.query("DELETE FROM post CASCADE WHERE post_id = $1 AND user_id = $2 RETURNING user_id",
+    const deleted_post = await pool.query("DELETE FROM posts CASCADE WHERE post_id = $1 AND user_id = $2 RETURNING user_id",
         [id, req.session["user"]["user_id"]]);
     console.log(deleted_post);
     if (!deleted_post["rows"][0] || deleted_post["rows"][0]["user_id"] !== req.session["user"]["user_id"]) {
@@ -58,7 +58,7 @@ router.post('/delete/:id/:category', async (req, res) => {
 
 router.get('/edit/:category/:id', async (req, res) => {
     const { id } = req.params;
-    const post = await pool.query("SELECT * FROM post WHERE post_id = $1",
+    const post = await pool.query("SELECT * FROM posts WHERE post_id = $1",
         [req.params.id]);
     if (post["rows"][0]["user_id"] !== req.session["user"]["user_id"]) {
         res.send("You cannot edit a post that doesn't belong to you");
@@ -68,7 +68,7 @@ router.get('/edit/:category/:id', async (req, res) => {
 });
 
 router.get('/comment/:category/:id', async (req, res) => {
-    const post = await pool.query("SELECT * FROM post WHERE post_id = $1",
+    const post = await pool.query("SELECT * FROM posts WHERE post_id = $1",
         [req.params.id]);
     const comments = await pool.query("SELECT * FROM comments WHERE post_id = $1",
         [req.params.id]);
@@ -84,13 +84,13 @@ router.post('/edit/:id/:category', async (req, res) => {
     const title = req.body.title;
     const body = req.body.body;
     const category = req.params.category;
-    const updatedPost = await pool.query('UPDATE post SET title = $1, body = $2 WHERE post_id = $3;',
+    const updatedPost = await pool.query('UPDATE posts SET title = $1, body = $2 WHERE post_id = $3;',
         [title, body, id]);
     res.redirect(`/posts/${category}`);
 });
 
 router.get("/:title", async (req, res) => {
-    const post = await pool.query('SELECT * FROM post WHERE title = $1',
+    const post = await pool.query('SELECT * FROM posts WHERE title = $1',
         [req.params.title]
     );
     res.render('posts/list', { jsonData: post });
