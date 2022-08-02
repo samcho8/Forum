@@ -13,14 +13,16 @@ router.post('/', async (req, res) => {
     const password = req.body.password;
     const hashed = await bcrypt.hash(password, salt);
     const username = req.body.username;
-    const account = await pool.query("SELECT email FROM users WHERE email = $1",
-        [req.body.email]);
-    if (account["rows"]["email"] || account["rows"]["username"]) {
-        res.send("An account with this email or username already exists");
-        return;
-    }
     const user = await pool.query("INSERT INTO users (username, password, email) VALUES($1, $2, $3) RETURNING user_id",
-        [username, hashed, req.body.email]);
+        [username, hashed, req.body.email]).catch((error) => {
+            return error;
+        });
+    if (!user["rows"]) {
+        if (user.code === '23505') {
+            res.send(`User with name ${username} already exists`);
+            return;
+        }
+    }
     const user_id = user["rows"][0]["user_id"];
     req.session.authenticated = true;
     req.session.user = {
