@@ -15,7 +15,6 @@ CREATE TABLE categories (
 
 CREATE TABLE posts (
     post_id SERIAL PRIMARY KEY,
-    likes INT,
     title TEXT,
     body TEXT,
     category_id SERIAL,
