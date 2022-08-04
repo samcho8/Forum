@@ -46,6 +46,6 @@ CREATE TABLE likes (
         REFERENCES users(user_id),
     FOREIGN KEY (post_id)
         REFERENCES posts(post_id),
-    CHECK(post_id AND user_id IS UNIQUE)
+    CONSTRAINT unique_user UNIQUE(post_id, user_id)
 );
 

@@ -113,6 +113,7 @@ router.get("/like/:category/:post_id", async (req, res) => {
     console.log(category);
     const updated_post = await pool.query('UPDATE posts SET like_count = (SELECT COUNT(*) FROM likes WHERE post_id = $1 AND like_dislike = true) WHERE post_id = $1 RETURNING *',
         [post_id]);
+    res.redirect(`/posts/${category}`)
 });
 
 
