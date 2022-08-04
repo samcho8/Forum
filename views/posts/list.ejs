@@ -17,6 +17,8 @@
             <% } %>
                 <p> by user <%= item["username"]%>
                 </p>
+                <p> Like Count: <%=item["like_count"]%> </p>
+                <a href="/posts/like/<%=category%>/<%=item["post_id"]%>"> Like </a>
                 <br />
                 <br />
                 <% } %>

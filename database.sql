@@ -19,6 +19,7 @@ CREATE TABLE posts (
     body TEXT,
     category_id SERIAL,
     user_id SERIAL,
+    like_count INT,
     FOREIGN KEY(user_id)
         REFERENCES users(user_id),
     FOREIGN KEY(category_id) 
@@ -34,5 +35,17 @@ CREATE TABLE comments (
         REFERENCES users(user_id),
     FOREIGN KEY(post_id)
         REFERENCES posts(post_id)
+);
+
+CREATE TABLE likes (
+    id SERIAL PRIMARY KEY,
+    post_id SERIAL,
+    user_id SERIAL,
+    like_dislike BOOLEAN,
+    FOREIGN KEY (user_id)
+        REFERENCES users(user_id),
+    FOREIGN KEY (post_id)
+        REFERENCES posts(post_id),
+    CHECK(post_id AND user_id IS UNIQUE)
 );
 

@@ -34,9 +34,10 @@ router.post('/:category', async (req, res) => {
     const title = req.body.title;
     const body = req.body.body;
     const category = req.params.category;
-    const newPost = await pool.query("INSERT INTO posts (title, body, category_id, user_id) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3), (SELECT user_id FROM users WHERE username = $4)) RETURNING *",
+    const newPost = await pool.query("INSERT INTO posts (title, body, category_id, user_id, like_count) VALUES ($1, $2, (SELECT category_id FROM categories WHERE category_name = $3), (SELECT user_id FROM users WHERE username = $4), 0) RETURNING *",
         [title, body, category, session["user"]["username"]]
     );
+    const post_id = newPost["rows"][0]["post_id"];
     res.redirect(`/posts/${category}`);
 });
 
@@ -90,10 +91,31 @@ router.post('/edit/:id/:category', async (req, res) => {
 
 router.get("/:title", async (req, res) => {
     const post = await pool.query('SELECT * FROM posts WHERE title = $1',
-        [req.params.title]
-    );
+        [req.params.title]);
     res.render('posts/list', { jsonData: post });
 });
+
+router.get("/like/:category/:post_id", async (req, res) => {
+    const session = req.session;
+    const { post_id, category } = req.params;
+    if (!session.authenticated) {
+        res.send("You must create an account to like a post");
+        return;
+    }
+    const like = await pool.query('INSERT INTO likes (post_id, user_id, like_dislike) VALUES($1, $2, true)',
+        [post_id, session.user.user_id]).catch((error) => {
+            return error;
+        });
+    if (like) {
+        await pool.query('UPDATE likes SET like_dislike = NOT like_dislike WHERE post_id = $1 AND user_id = $2', 
+        [post_id, session.user.user_id]);
+    }
+    console.log(category);
+    const updated_post = await pool.query('UPDATE posts SET like_count = (SELECT COUNT(*) FROM likes WHERE post_id = $1 AND like_dislike = true) WHERE post_id = $1 RETURNING *',
+        [post_id]);
+});
+
+
 router.get("*", (req, res) => {
     res.redirect('/');
 });
