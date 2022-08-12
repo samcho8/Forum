@@ -2,14 +2,25 @@ const express = require('express');
 const pool = require('../db');
 const router = express.Router();
 
+router.use('/logged_in', async (req, res, next) => {
+    if (!req.session) {
+        res.redirect('/login');
+        return;
+    } else if (!req.session.authenticated) {
+        res.redirect('/login');
+        return;
+    }
+    next();
+});
+
 router.get('/:category', async (req, res) => {
     const posts = await pool.query("SELECT * FROM posts p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ",
         [req.params.category]);
     if (req.session["user"]) {
-        res.render("posts/list", { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
+        res.render('posts/list', { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
         return;
     }
-    res.render("posts/list", { data: posts["rows"], user: 0, category: req.params.category });
+    res.render('posts/list', { data: posts["rows"], user: 0, category: req.params.category });
 })
 
 router.get('/new/:category', (req, res) => {
@@ -25,7 +36,7 @@ router.post('/comment/:id/:category', async (req, res) => {
     res.redirect(`/posts/${req.params.category}`);
 });
 
-router.post('/:category', async (req, res) => {
+router.post('/logged_in/:category', async (req, res) => {
     if (!req.body.title) {
         res.status(500).send("cannot create post without a title");
         return;
@@ -41,22 +52,19 @@ router.post('/:category', async (req, res) => {
     res.redirect(`/posts/${category}`);
 });
 
-router.post('/delete/:id/:category', async (req, res) => {
+router.post('/logged_in/delete/:id/:category', async (req, res) => {
     const { id } = req.params;
-    const deleted_post = await pool.query("DELETE FROM posts CASCADE WHERE post_id = $1 AND user_id = $2 RETURNING user_id",
+    const deleted_post = await pool.query("DELETE FROM posts WHERE post_id = $1 AND user_id = $2 RETURNING user_id",
         [id, req.session["user"]["user_id"]]);
-    console.log(deleted_post);
     if (!deleted_post["rows"][0] || deleted_post["rows"][0]["user_id"] !== req.session["user"]["user_id"]) {
         res.send("You cannot delete a post that doesn't belong to you");
         return;
     }
-    const deleted_comments = await pool.query("DELETE FROM comments WHERE post_id = $1",
-        [id]);
     res.redirect(`/posts/${req.params.category}`);
 });
 
 
-router.get('/edit/:category/:id', async (req, res) => {
+router.get('/logged_in/edit/:category/:id', async (req, res) => {
     const { id } = req.params;
     const post = await pool.query("SELECT * FROM posts WHERE post_id = $1",
         [req.params.id]);
@@ -75,7 +83,7 @@ router.get('/comment/:category/:id', async (req, res) => {
     res.render('posts/comment', { data: post["rows"][0], comments: comments["rows"], category: req.params.category });
 });
 
-router.post('/edit/:id/:category', async (req, res) => {
+router.post('/logged_in/edit/:id/:category', async (req, res) => {
     if (!req.body.title) {
         res.redirect('/posts');
         return;
@@ -95,22 +103,16 @@ router.get("/:title", async (req, res) => {
     res.render('posts/list', { jsonData: post });
 });
 
-router.get("/like/:category/:post_id", async (req, res) => {
-    const session = req.session;
+router.get("/logged_in/like/:category/:post_id", async (req, res) => {
     const { post_id, category } = req.params;
-    if (!session.authenticated) {
-        res.send("You must create an account to like a post");
-        return;
-    }
     const like = await pool.query('INSERT INTO likes (post_id, user_id, like_dislike) VALUES($1, $2, true)',
-        [post_id, session.user.user_id]).catch((error) => {
+        [post_id, req.session.user.user_id]).catch((error) => {
             return error;
         });
     if (like) {
         await pool.query('UPDATE likes SET like_dislike = NOT like_dislike WHERE post_id = $1 AND user_id = $2', 
-        [post_id, session.user.user_id]);
+        [post_id, req.session.user.user_id]);
     }
-    console.log(category);
     const updated_post = await pool.query('UPDATE posts SET like_count = (SELECT COUNT(*) FROM likes WHERE post_id = $1 AND like_dislike = true) WHERE post_id = $1 RETURNING *',
         [post_id]);
     res.redirect(`/posts/${category}`)

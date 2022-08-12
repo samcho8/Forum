@@ -21,7 +21,7 @@ CREATE TABLE posts (
     user_id SERIAL,
     like_count INT,
     FOREIGN KEY(user_id)
-        REFERENCES users(user_id),
+        REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY(category_id) 
         REFERENCES categories(category_id)
 );
@@ -32,9 +32,9 @@ CREATE TABLE comments (
     user_id SERIAL,
     description TEXT,
     FOREIGN KEY (user_id)
-        REFERENCES users(user_id),
+        REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY(post_id)
-        REFERENCES posts(post_id)
+        REFERENCES posts(post_id) ON DELETE CASCADE
 );
 
 CREATE TABLE likes (
@@ -43,9 +43,9 @@ CREATE TABLE likes (
     user_id SERIAL,
     like_dislike BOOLEAN,
     FOREIGN KEY (user_id)
-        REFERENCES users(user_id),
+        REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (post_id)
-        REFERENCES posts(post_id),
+        REFERENCES posts(post_id) ON DELETE CASCADE,
     CONSTRAINT unique_user UNIQUE(post_id, user_id)
 );
 
