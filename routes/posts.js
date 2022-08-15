@@ -2,32 +2,30 @@ const express = require('express');
 const pool = require('../db');
 const router = express.Router();
 
-router.use('/logged_in', async (req, res, next) => {
-    if (!req.session) {
-        res.redirect('/login');
-        return;
-    } else if (!req.session.authenticated) {
+function authRequired(req, res, next) {
+    if (!req.session.authenticated) {
         res.redirect('/login');
         return;
     }
     next();
-});
+}
+
 
 router.get('/:category', async (req, res) => {
-    const posts = await pool.query("SELECT * FROM posts p LEFT JOIN users u ON p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) ",
+    const posts = await pool.query("SELECT p.*, u.username, COUNT(l) like_count FROM posts p LEFT JOIN likes l ON p.post_id = l.post_id RIGHT JOIN users u ON u.user_id = p.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) GROUP BY p.post_id, u.username ;",
         [req.params.category]);
     if (req.session["user"]) {
         res.render('posts/list', { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
         return;
-    }
+    } 
     res.render('posts/list', { data: posts["rows"], user: 0, category: req.params.category });
 })
 
-router.get('/new/:category', (req, res) => {
+router.get('/new/:category', authRequired, (req, res) => {
     res.render("posts/new", { category: req.params.category });
 });
 
-router.post('/comment/:id/:category', async (req, res) => {
+router.post('/comment/:id/:category', authRequired, async (req, res) => {
     const id = req.params.id;
     const description = req.body.comment;
     const session = req.session;
@@ -36,7 +34,7 @@ router.post('/comment/:id/:category', async (req, res) => {
     res.redirect(`/posts/${req.params.category}`);
 });
 
-router.post('/logged_in/:category', async (req, res) => {
+router.post('/:category', authRequired, async (req, res) => {
     if (!req.body.title) {
         res.status(500).send("cannot create post without a title");
         return;
@@ -52,7 +50,7 @@ router.post('/logged_in/:category', async (req, res) => {
     res.redirect(`/posts/${category}`);
 });
 
-router.post('/logged_in/delete/:id/:category', async (req, res) => {
+router.post('/delete/:id/:category', authRequired, async (req, res) => {
     const { id } = req.params;
     const deleted_post = await pool.query("DELETE FROM posts WHERE post_id = $1 AND user_id = $2 RETURNING user_id",
         [id, req.session["user"]["user_id"]]);
@@ -64,7 +62,7 @@ router.post('/logged_in/delete/:id/:category', async (req, res) => {
 });
 
 
-router.get('/logged_in/edit/:category/:id', async (req, res) => {
+router.get('/edit/:category/:id', authRequired, async (req, res) => {
     const { id } = req.params;
     const post = await pool.query("SELECT * FROM posts WHERE post_id = $1",
         [req.params.id]);
@@ -75,7 +73,7 @@ router.get('/logged_in/edit/:category/:id', async (req, res) => {
     res.render('posts/edit', { data: post["rows"][0], category: req.params.category });
 });
 
-router.get('/comment/:category/:id', async (req, res) => {
+router.get('/comment/:category/:id', authRequired, async (req, res) => {
     const post = await pool.query("SELECT * FROM posts WHERE post_id = $1",
         [req.params.id]);
     const comments = await pool.query("SELECT * FROM comments WHERE post_id = $1",
@@ -83,7 +81,7 @@ router.get('/comment/:category/:id', async (req, res) => {
     res.render('posts/comment', { data: post["rows"][0], comments: comments["rows"], category: req.params.category });
 });
 
-router.post('/logged_in/edit/:id/:category', async (req, res) => {
+router.post('/edit/:id/:category', authRequired, async (req, res) => {
     if (!req.body.title) {
         res.redirect('/posts');
         return;
@@ -103,26 +101,13 @@ router.get("/:title", async (req, res) => {
     res.render('posts/list', { jsonData: post });
 });
 
-router.get("/logged_in/like/:category/:post_id", async (req, res) => {
+router.get("/like/:category/:post_id", authRequired, async (req, res) => {
     const { post_id, category } = req.params;
     const like = await pool.query('INSERT INTO likes (post_id, user_id, like_dislike) VALUES($1, $2, true)',
         [post_id, req.session.user.user_id]).catch((error) => {
             return error;
         });
-    if (like) {
-        await pool.query('UPDATE likes SET like_dislike = NOT like_dislike WHERE post_id = $1 AND user_id = $2', 
-        [post_id, req.session.user.user_id]);
-    }
-    const updated_post = await pool.query('UPDATE posts SET like_count = (SELECT COUNT(*) FROM likes WHERE post_id = $1 AND like_dislike = true) WHERE post_id = $1 RETURNING *',
-        [post_id]);
     res.redirect(`/posts/${category}`)
 });
-
-
-router.get("*", (req, res) => {
-    res.redirect('/');
-});
-
-
 
 module.exports = router;
