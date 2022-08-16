@@ -18,7 +18,16 @@
                 <p> by user <%= item["username"]%>
                 </p>
                 <p> Like Count: <%=item["like_count"]%> </p>
-                <a href="/posts/like/<%=category%>/<%=item["post_id"]%>"> Like </a>
+                <%if (item["like_dislike"] === false) { %>
+                    <form method="POST" action="/posts/like/<%=category%>/<%=item["post_id"]%>">
+                        <button type="submit"> Like </button> 
+                    </form>
+                <% } %>
+                <%if (item["like_dislike"] === true) { %>
+                    <form method="POST" action="/posts/unlike/<%=category%>/<%=item["post_id"]%>">
+                        <button type="submit"> Undo like </button> 
+                    </form>
+                <% } %>
                 <br />
                 <br />
                 <% } %>
