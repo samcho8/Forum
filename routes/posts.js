@@ -13,7 +13,7 @@ function authRequired(req, res, next) {
 
 router.get('/:category', async (req, res) => {
     const user_id = req.session.user ? req.session.user.user_id : null;
-    const posts = await pool.query("SELECT p.*, u.username, COUNT(l) like_count, COALESCE(x.like_dislike, false) like_dislike FROM posts p FULL JOIN likes l ON p.post_id = l.post_id RIGHT JOIN users u ON u.user_id = p.user_id LEFT JOIN (SELECT post_id, like_dislike FROM likes WHERE user_id = $2) x ON x.post_id = p.post_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) GROUP BY p.post_id, u.username, x.post_id, x.like_dislike;",
+    const posts = await pool.query("SELECT p.*, u.username, (CASE WHEN (SELECT COUNT(l) FROM likes WHERE user_id = $2 AND post_id = p.post_id) > 0 THEN true ELSE false END) like_dislike, COUNT(l) like_count FROM posts p LEFT JOIN likes l ON l.post_id = p.post_id LEFT JOIN users u on p.user_id = u.user_id WHERE category_id = (SELECT category_id FROM categories WHERE category_name = $1) GROUP BY p.post_id, u.username;",
         [req.params.category, user_id]);
     if (req.session["user"]) {
         res.render('posts/list', { data: posts["rows"], user: req.session["user"]["username"], category: req.params.category });
@@ -103,7 +103,7 @@ router.get("/:title", async (req, res) => {
 
 router.post("/like/:category/:post_id", authRequired, async (req, res) => {
     const { post_id, category } = req.params;
-    const like = await pool.query('INSERT INTO likes (post_id, user_id, like_dislike) VALUES($1, $2, true)',
+    const like = await pool.query('INSERT INTO likes (post_id, user_id) VALUES($1, $2)',
         [post_id, req.session.user.user_id]).catch((error) => {
             return error;
         });

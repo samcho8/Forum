@@ -19,7 +19,6 @@ CREATE TABLE posts (
     body TEXT,
     category_id SERIAL,
     user_id SERIAL,
-    like_count INT,
     FOREIGN KEY(user_id)
         REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY(category_id) 
@@ -41,7 +40,6 @@ CREATE TABLE likes (
     id SERIAL PRIMARY KEY,
     post_id SERIAL,
     user_id SERIAL,
-    like_dislike BOOLEAN,
     FOREIGN KEY (user_id)
         REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (post_id)
